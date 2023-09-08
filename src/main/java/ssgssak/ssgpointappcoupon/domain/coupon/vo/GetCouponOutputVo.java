@@ -1,14 +1,15 @@
-package ssgssak.ssgpointappcoupon.domain.coupon.dto;
+package ssgssak.ssgpointappcoupon.domain.coupon.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterCouponInputDto {
+@Getter
+public class GetCouponOutputVo {
+    private String barcodeUrl;
     private String couponNumber;
 }

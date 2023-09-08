@@ -9,6 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterCouponInputDto {
+public class CreateIndividualCouponOutputDto {
+    private Long id;
+    private Long couponId;
     private String couponNumber;
+    private String barcodeUrl;
+    private Boolean isRegistered;
+    private String uuid;
 }

@@ -5,10 +5,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
+import java.util.HashMap;
+import java.util.List;
+
 @Builder
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterCouponInputDto {
-    private String couponNumber;
+public class DownloadAllCouponsInputDto {
+    List<HashMap<String ,String>> couponIdList;
 }

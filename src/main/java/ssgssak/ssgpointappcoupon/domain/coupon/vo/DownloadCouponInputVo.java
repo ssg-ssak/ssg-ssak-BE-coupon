@@ -4,7 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class DownloadCouponInputVo {
-    private Long couponId;
-    private String couponNumber;
-    private String uuid; //todo: 임시설정
+    private Long couponId; //todo: 안될경우 String으로 변경
 }

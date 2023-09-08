@@ -13,13 +13,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 public class CreateCouponInputDto {
-    private String couponName;
-    private CouponType couponType;
-    private String couponNumber;
-    private String barcodeUrl;
-    private LocalDate couponIssueDate;
-    private LocalDate couponExpirationDate;
-    private String availableShop;
-    private String couponImageUrl;
-    private Boolean isRegistered;
+    private LocalDate startDate;
+    private LocalDate expirationDate;
+    private String name;
+    private String brand;
+    private String discountImageUrl;
+    private String brandImageUrl;
+    private String brandLogoUrl;
+    private CouponType type;
 }

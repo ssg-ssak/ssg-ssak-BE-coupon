@@ -4,11 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import ssgssak.ssgpointappcoupon.domain.coupon.entity.Coupon;
 
-@Getter
+import java.util.List;
+
 @Builder
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterCouponInputDto {
-    private String couponNumber;
+public class GetMyCouponsOutputDto {
+    private List<Coupon> myCoupons;
 }

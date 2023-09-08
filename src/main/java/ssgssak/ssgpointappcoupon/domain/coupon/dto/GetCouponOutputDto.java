@@ -5,10 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Builder
-@AllArgsConstructor
+@Getter
 @NoArgsConstructor
-public class RegisterCouponInputDto {
+@AllArgsConstructor
+public class GetCouponOutputDto {
+    private String barcodeUrl;
     private String couponNumber;
 }

@@ -1,12 +1,19 @@
 package ssgssak.ssgpointappcoupon.domain.coupon.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import ssgssak.ssgpointappcoupon.domain.coupon.entity.CouponType;
 
 import java.time.LocalDate;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
-public class CreateCouponInputVo {
+public class CreateCouponOutputVo {
+    private Long id;
     private LocalDate startDate;
     private LocalDate expirationDate;
     private String name;
