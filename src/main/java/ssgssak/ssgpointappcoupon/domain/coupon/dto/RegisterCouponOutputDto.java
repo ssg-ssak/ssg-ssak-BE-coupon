@@ -14,7 +14,6 @@ import java.time.LocalDate;
 public class RegisterCouponOutputDto {
     private Long id;
     private Long couponId;
-    private String uuid;
     private LocalDate downloadDate;
     private Boolean isUsed;
     private Boolean isExpired;

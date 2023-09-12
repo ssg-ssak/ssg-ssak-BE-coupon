@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class GetUnavailableCouponsInputDto {
-    private String uuid;
     private String status;
 }
