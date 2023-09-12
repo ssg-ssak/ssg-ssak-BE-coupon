@@ -22,7 +22,7 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CouponServiceImpl {
+public class CouponServiceImpl implements CouponService {
     private final CouponRepository couponRepository;
     private final IndividualCouponRepository individualCouponRepository;
     private final UserCouponListRepository userCouponListRepository;
@@ -41,6 +41,7 @@ public class CouponServiceImpl {
      */
 
     // 1. 새로운 쿠폰 생성
+    @Override
     public CreateCouponOutputDto createCoupon(CreateCouponInputDto createCouponInputDto) {
         Coupon coupon = modelMapper.map(createCouponInputDto, Coupon.class);
         couponRepository.save(coupon);
@@ -48,6 +49,7 @@ public class CouponServiceImpl {
     }
 
     // 2. 개별 쿠폰(쿠폰 데이터 생성) 생성
+    @Override
     public CreateIndividualCouponOutputDto createIndividualCoupon(
             CreateIndividualCouponInputDto createIndividualCouponInputDto) {
         couponRepository.findById(createIndividualCouponInputDto.getCouponId())
@@ -84,7 +86,8 @@ public class CouponServiceImpl {
     }
 
     // 3. 쿠폰 전체 조회하기(현재 시간 기준으로 만료되지 않은 쿠폰 조회하기)
-    public GetAllCouponsOutputDto getAllCoupons() {
+    @Override
+    public GetAllCouponsOutputDto getAllCoupons(String uuid) {
         List<Coupon> coupons =
                 couponRepository.findAllByTypeAndStartDateLessThanEqualAndExpirationDateGreaterThanEqual(
                         CouponType.DOWNLOADABLE, today, today);
@@ -105,7 +108,7 @@ public class CouponServiceImpl {
             couponHashMap.put("brandLogoUrl", coupon.getBrandLogoUrl());
             couponHashMap.put("type", coupon.getType().toString());
 
-            if(null == userCouponListRepository.findByUuidAndCouponId("uuid", coupon.getId())) { //todo: 임시설정
+            if(null == userCouponListRepository.findByUuidAndCouponId(uuid, coupon.getId())) {
                 couponHashMap.put("isRegistered", "false");
             } else {
                 couponHashMap.put("isRegistered", "true");
@@ -116,29 +119,36 @@ public class CouponServiceImpl {
                 .coupons(couponArrayList)
                 .build();
     }
-    
+
     // 4. 쿠폰 다운로드(다운로드 버튼 클릭)
-    public DownloadCouponOutputDto downloadCoupon(DownloadCouponInputDto downloadCouponInputDto) {
+    @Override
+    public DownloadCouponOutputDto downloadCoupon(DownloadCouponInputDto downloadCouponInputDto, String uuid) {
         IndividualCoupon individualCoupon = individualCouponRepository.findFirstByCouponIdAndIsRegisteredFalse(
                 downloadCouponInputDto.getCouponId())
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰이 모두 소진되었습니다."));
         // 쿠폰 업데이트(개별 쿠폰 유저에게 귀속 처리, 유저 uuid 필드 값 등록)
-        updateIndividualCoupon(individualCoupon, "uuid");
+        updateIndividualCoupon(individualCoupon, uuid);
         // 마이쿠폰함에 들어갈 레코드 생성
         UserCouponList userCouponList = UserCouponList.builder()
                 .couponId(individualCoupon.getCouponId())
-                .uuid("uuid") //todo: 임시설정(나중에 security로 불러오던지 해야함)
+                .uuid(uuid)
                 .downloadDate(LocalDate.now())
                 .isUsed(false)
                 .isExpired(false)
                 .build();
         userCouponListRepository.save(userCouponList);
-        return modelMapper.map(userCouponList, DownloadCouponOutputDto.class);
+        return DownloadCouponOutputDto.builder()
+                .id(userCouponList.getId())
+                .couponId(userCouponList.getCouponId())
+                .downloadDate(userCouponList.getDownloadDate())
+                .isUsed(userCouponList.getIsUsed())
+                .isExpired(userCouponList.getIsExpired())
+                .build();
     }
 
     // 4-1. 개별 쿠폰 귀속 처리, 유저 uuid 등록
     public void updateIndividualCoupon(IndividualCoupon individualCoupon, String uuid) {
-        individualCoupon.updateUuid(uuid); //todo: 임시설정(나중에 security로 불러오던지 해야함)
+        individualCoupon.updateUuid(uuid);
         individualCoupon.updateIsRegisteredToTrue();
     }
 
@@ -150,7 +160,8 @@ public class CouponServiceImpl {
     3. 등록형 쿠폰 여부 ✅
     4. 쿠폰 만료 여부 //todo: 쿠폰 만료 여부 매일 00시에 확인하여 DB 자동 업데이트 하는 로직 생각해보기
      */
-    public RegisterCouponOutputDto registerCoupon(RegisterCouponInputDto registerCouponInputDto) {
+    @Override
+    public RegisterCouponOutputDto registerCoupon(RegisterCouponInputDto registerCouponInputDto, String uuid) {
         // 1. 쿠폰 번호 유효 여부 확인, 2. 쿠폰 등록 여부 확인
         IndividualCoupon individualCoupon =
                 individualCouponRepository.findFirstByCouponNumberAndIsRegisteredFalse(
@@ -161,21 +172,29 @@ public class CouponServiceImpl {
                individualCoupon.getCouponId(), CouponType.REGISTRABLE, today, today)
                 .orElseThrow(() -> new IllegalArgumentException("쿠폰이 존재하지 않습니다."));
         // 쿠폰 업데이트(개별 쿠폰 유저에게 귀속 처리, 유저 uuid 필드 값 등록)
-        updateIndividualCoupon(individualCoupon, "uuid");
+        updateIndividualCoupon(individualCoupon, uuid);
         // 마이쿠폰함에 들어갈 레코드 생성
         UserCouponList userCouponList = UserCouponList.builder()
                 .couponId(individualCoupon.getCouponId())
-                .uuid("uuid") //todo: 임시설정(나중에 security로 불러오던지 해야함)
+                .uuid(uuid)
                 .downloadDate(LocalDate.now())
                 .isUsed(false)
                 .isExpired(false)
                 .build();
         userCouponListRepository.save(userCouponList);
-        return modelMapper.map(userCouponList, RegisterCouponOutputDto.class);
+        return RegisterCouponOutputDto.builder()
+                .id(userCouponList.getId())
+                .couponId(userCouponList.getCouponId())
+                .downloadDate(userCouponList.getDownloadDate())
+                .isUsed(userCouponList.getIsUsed())
+                .isExpired(userCouponList.getIsExpired())
+                .build();
     }
 
     // 6. 쿠폰 전체 다운로드(쿠폰 페이지에서 다운 받지 않은 쿠폰만)
-    public DownloadAllCouponsOutputDto downloadAllCoupons(DownloadAllCouponsInputDto downloadAllCouponsInputDto) {
+    @Override
+    public DownloadAllCouponsOutputDto downloadAllCoupons(
+            DownloadAllCouponsInputDto downloadAllCouponsInputDto, String uuid) {
         List<HashMap<String, String>> couponIdList;
         couponIdList = downloadAllCouponsInputDto.getCouponIdList();
         ArrayList<UserCouponList> downloadedCoupons = new ArrayList<>();
@@ -185,17 +204,17 @@ public class CouponServiceImpl {
                     individualCouponRepository.findFirstByCouponIdAndIsRegisteredFalse(couponId)
                             .orElseThrow(() -> new IllegalArgumentException("쿠폰을 다운받을 수 없습니다."));
             // 쿠폰 데이터에 귀속 여부 true로 변경, 쿠폰 소유하는 유저 uuid 등록
-            updateIndividualCoupon(individualCoupon, "uuid"); //todo: 임시설정(나중에 security로 불러오던지 해야함)
+            updateIndividualCoupon(individualCoupon, uuid);
             UserCouponList userCouponList = UserCouponList.builder()
                     .couponId(individualCoupon.getCouponId())
-                    .uuid("uuid") //todo: 임시설정(나중에 security로 불러오던지 해야함)
+                    .uuid(uuid)
                     .downloadDate(LocalDate.now())
                     .isUsed(false)
                     .isExpired(false)
                     .build();
             // 유저 쿠폰함에 쿠폰 데이터 추가
             userCouponListRepository.save(userCouponList);
-            downloadedCoupons.add(userCouponList);
+            downloadedCoupons.add(userCouponList.toBuilder().uuid(null).build());
         }
         return DownloadAllCouponsOutputDto.builder()
                 .downloadedCoupons(downloadedCoupons)
@@ -203,11 +222,12 @@ public class CouponServiceImpl {
     }
 
     // 7. 쿠폰 조회하기(쿠폰 사용하기 버튼 클릭)
-    public GetCouponOutputDto getCoupon(GetCouponInputDto getCouponInputDto) {
+    @Override
+    public GetCouponOutputDto getCoupon(GetCouponInputDto getCouponInputDto, String uuid) {
         Long couponId = Long.parseLong(getCouponInputDto.getCouponId());
         IndividualCoupon individualCoupon =
                 individualCouponRepository.findByCouponIdAndUuidAndIsRegisteredTrue(
-                        couponId, "uuid") //todo: uuid 임시설정(나중에 security로 불러오던지 해야함)
+                        couponId, uuid)
                         .orElseThrow(() -> new IllegalArgumentException("쿠폰을 불러올 수 없습니다."));
         return GetCouponOutputDto.builder()
                 .barcodeUrl(individualCoupon.getBarcodeUrl())
@@ -216,11 +236,12 @@ public class CouponServiceImpl {
     }
 
     // 8. 소유하고 사용가능한 쿠폰 전체 조회하기(마이 쿠폰함에서)
-    public GetMyCouponsOutputDto getMyCoupons(GetMyCouponsInputDto getMyCouponsInputDto) {
+    @Override
+    public GetMyCouponsOutputDto getMyCoupons(GetMyCouponsInputDto getMyCouponsInputDto, String uuid) {
         // 유저가 소유한 쿠폰 데이터에서 해당 유저의 uuid로 userCouponListData로 불러오기
         // (사용하지 않고/만료되지 않은 유효한 쿠폰만)
         List<UserCouponList> userCouponListData =
-                userCouponListRepository.findAllByUuidAndIsUsedFalseAndIsExpiredFalse(getMyCouponsInputDto.getUuid());
+                userCouponListRepository.findAllByUuidAndIsUsedFalseAndIsExpiredFalse(uuid);
         // 페이지에 전달할 데이터를 담는 ArrayList
         ArrayList<Coupon> myCoupons = new ArrayList<>();
         Coupon coupon;
@@ -245,24 +266,22 @@ public class CouponServiceImpl {
     }
 
     // 9. 사용완료/기간만료 쿠폰 전체 조회하기(마이 쿠폰함에서)
+    @Override
     public GetUnavailableCouponsOutputDto getUnavailableCoupons(
-            GetUnavailableCouponsInputDto getUnavailableCouponsInputDto) {
+            GetUnavailableCouponsInputDto getUnavailableCouponsInputDto, String uuid) {
         List<UserCouponList> unavailableUserCouponList;
         String couponStatus = getUnavailableCouponsInputDto.getStatus();
         // 사용 불가능한 전체 쿠폰 조회
         if(couponStatus.isEmpty() || couponStatus.equals("all")){
-            unavailableUserCouponList = userCouponListRepository.findAllByUuidAndIsUsedTrueOrIsExpiredTrue(
-                    getUnavailableCouponsInputDto.getUuid());
+            unavailableUserCouponList = userCouponListRepository.findAllByUuidAndIsUsedTrueOrIsExpiredTrue(uuid);
         }
         // 만료 쿠폰 조회
         else if(couponStatus.equals("isExpired")) {
-            unavailableUserCouponList = userCouponListRepository.findAllByUuidAndIsExpiredTrue(
-                    getUnavailableCouponsInputDto.getUuid());
+            unavailableUserCouponList = userCouponListRepository.findAllByUuidAndIsExpiredTrue(uuid);
         }
         // 사용 완료 쿠폰 조회
         else {
-            unavailableUserCouponList = userCouponListRepository.findAllByUuidAndIsUsedTrue(
-                    getUnavailableCouponsInputDto.getUuid());
+            unavailableUserCouponList = userCouponListRepository.findAllByUuidAndIsUsedTrue(uuid);
         }
 
         // 페이지에 전달할 쿠폰 데이터를 담는 ArrayList

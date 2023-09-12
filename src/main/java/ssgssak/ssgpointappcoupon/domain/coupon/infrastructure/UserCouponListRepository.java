@@ -12,5 +12,6 @@ public interface UserCouponListRepository extends JpaRepository<UserCouponList, 
     List<UserCouponList> findAllByUuidAndIsUsedTrueOrIsExpiredTrue(String uuid);
     List<UserCouponList> findAllByUuidAndIsUsedTrue(String uuid);
     List<UserCouponList> findAllByUuidAndIsExpiredTrue(String uuid);
+    List<UserCouponList> findAllByIsExpired(Boolean isExpired);
 
 }

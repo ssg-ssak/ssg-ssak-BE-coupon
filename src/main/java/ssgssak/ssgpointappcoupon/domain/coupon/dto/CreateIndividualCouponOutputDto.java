@@ -15,5 +15,4 @@ public class CreateIndividualCouponOutputDto {
     private String couponNumber;
     private String barcodeUrl;
     private Boolean isRegistered;
-    private String uuid;
 }

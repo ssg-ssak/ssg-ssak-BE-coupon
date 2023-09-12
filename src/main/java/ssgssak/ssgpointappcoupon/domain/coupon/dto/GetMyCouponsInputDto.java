@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetMyCouponsInputDto {
-    private String uuid;
     private String order;
 }
