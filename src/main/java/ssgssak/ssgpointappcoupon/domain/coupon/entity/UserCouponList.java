@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserCouponList {

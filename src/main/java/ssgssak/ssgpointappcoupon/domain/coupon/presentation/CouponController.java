@@ -9,6 +9,8 @@ import ssgssak.ssgpointappcoupon.domain.coupon.application.CouponServiceImpl;
 import ssgssak.ssgpointappcoupon.domain.coupon.dto.*;
 import ssgssak.ssgpointappcoupon.domain.coupon.vo.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/api/v1/coupons")
 @RequiredArgsConstructor
@@ -62,8 +64,8 @@ public class CouponController {
 
     // 1. 쿠폰 전체 조회(쿠폰 페이지 방문)
     @GetMapping("/downloadable/all-coupons")
-    public ResponseEntity<GetAllCouponsOutputVo> getAllCoupons() {
-        GetAllCouponsOutputDto getAllCouponsOutputDto = couponService.getAllCoupons();
+    public ResponseEntity<GetAllCouponsOutputVo> getAllCoupons(Principal principal) {
+        GetAllCouponsOutputDto getAllCouponsOutputDto = couponService.getAllCoupons(principal.getName());
         GetAllCouponsOutputVo getAllCouponsOutputVo = modelMapper.map(
                 getAllCouponsOutputDto, GetAllCouponsOutputVo.class);
         return new ResponseEntity<>(getAllCouponsOutputVo, HttpStatus.OK);
@@ -76,11 +78,11 @@ public class CouponController {
      */
     @PostMapping("/downloadable/all-coupons")
     public ResponseEntity<DownloadAllCouponsOutputVo> downloadAllCoupons(
-            @RequestBody DownloadAllCouponsInputVo downloadAllCouponsInputVo) {
+            @RequestBody DownloadAllCouponsInputVo downloadAllCouponsInputVo, Principal principal) {
         DownloadAllCouponsInputDto downloadAllCouponsInputDto = modelMapper.map(
                 downloadAllCouponsInputVo, DownloadAllCouponsInputDto.class);
         DownloadAllCouponsOutputDto downloadAllCouponsOutputDto =
-                couponService.downloadAllCoupons(downloadAllCouponsInputDto);
+                couponService.downloadAllCoupons(downloadAllCouponsInputDto, principal.getName());
         DownloadAllCouponsOutputVo downloadAllCouponsOutputVo = modelMapper.map(
                 downloadAllCouponsOutputDto, DownloadAllCouponsOutputVo.class);
         return new ResponseEntity<>(downloadAllCouponsOutputVo, HttpStatus.OK);
@@ -88,10 +90,11 @@ public class CouponController {
     // 3. 쿠폰 다운로드(다운로드형 쿠폰만 다운로드 가능)
     @PostMapping("/downloadable")
     public ResponseEntity<DownloadCouponOutputVo> downloadCoupon(
-            @RequestBody DownloadCouponInputVo downloadCouponInputVo) {
+            @RequestBody DownloadCouponInputVo downloadCouponInputVo, Principal principal) {
         DownloadCouponInputDto downloadCouponInputDto = modelMapper.map(
                 downloadCouponInputVo, DownloadCouponInputDto.class);
-        DownloadCouponOutputDto downloadCouponOutputDto = couponService.downloadCoupon(downloadCouponInputDto);
+        DownloadCouponOutputDto downloadCouponOutputDto =
+                couponService.downloadCoupon(downloadCouponInputDto, principal.getName());
         DownloadCouponOutputVo downloadCouponOutputVo = modelMapper.map(
                 downloadCouponOutputDto, DownloadCouponOutputVo.class);
         return new ResponseEntity<>(downloadCouponOutputVo, HttpStatus.OK);
@@ -100,10 +103,11 @@ public class CouponController {
     // 4. 쿠폰 등록하기(등록형 쿠폰의 couponNumber를 입력하여 다운로드)
     @PostMapping("/registrable")
     public ResponseEntity<RegisterCouponOutputVo> registerCoupon(
-            @RequestBody RegisterCouponInputVo registerCouponInputVo) {
+            @RequestBody RegisterCouponInputVo registerCouponInputVo, Principal principal) {
         RegisterCouponInputDto registerCouponInputDto = modelMapper.map(
                 registerCouponInputVo, RegisterCouponInputDto.class);
-        RegisterCouponOutputDto registerCouponOutputDto = couponService.registerCoupon(registerCouponInputDto);
+        RegisterCouponOutputDto registerCouponOutputDto =
+                couponService.registerCoupon(registerCouponInputDto, principal.getName());
         RegisterCouponOutputVo registerCouponOutputVo = modelMapper.map(
                 registerCouponOutputDto, RegisterCouponOutputVo.class);
         return new ResponseEntity<>(registerCouponOutputVo, HttpStatus.OK);
@@ -114,18 +118,20 @@ public class CouponController {
     프론트 쪽에서 조회하는 쿠폰의 couponId를 InputVo로 받아온다.
      */
     @GetMapping("")
-    public ResponseEntity<GetCouponOutputVo> getCoupon(GetCouponInputVo getCouponInputVo) {
+    public ResponseEntity<GetCouponOutputVo> getCoupon(GetCouponInputVo getCouponInputVo, Principal principal) {
         GetCouponInputDto getCouponInputDto = modelMapper.map(getCouponInputVo, GetCouponInputDto.class);
-        GetCouponOutputDto getCouponOutputDto = couponService.getCoupon(getCouponInputDto);
+        GetCouponOutputDto getCouponOutputDto = couponService.getCoupon(getCouponInputDto, principal.getName());
         GetCouponOutputVo getCouponOutputVo = modelMapper.map(getCouponOutputDto, GetCouponOutputVo.class);
         return new ResponseEntity<>(getCouponOutputVo, HttpStatus.OK);
     }
 
     // 6. 소유하고 사용가능한 쿠폰 전체 조회하기(마이 쿠폰함에서)
     @GetMapping("/my-coupons")
-    public ResponseEntity<GetMyCouponsOutputVo> getMyCoupons(GetMyCouponsInputVo getMyCouponsInputVo) {
+    public ResponseEntity<GetMyCouponsOutputVo> getMyCoupons(
+            GetMyCouponsInputVo getMyCouponsInputVo, Principal principal) {
         GetMyCouponsInputDto getMyCouponsInputDto = modelMapper.map(getMyCouponsInputVo, GetMyCouponsInputDto.class);
-        GetMyCouponsOutputDto getMyCouponsOutputDto = couponService.getMyCoupons(getMyCouponsInputDto);
+        GetMyCouponsOutputDto getMyCouponsOutputDto =
+                couponService.getMyCoupons(getMyCouponsInputDto, principal.getName());
         GetMyCouponsOutputVo getMyCouponsOutputVo = modelMapper.map(getMyCouponsOutputDto, GetMyCouponsOutputVo.class);
         return new ResponseEntity<>(getMyCouponsOutputVo, HttpStatus.OK);
     }
@@ -133,11 +139,11 @@ public class CouponController {
     // 7. 사용완료/기간만료 쿠폰 전체 조회하기(마이 쿠폰함에서)
     @GetMapping("/my-coupons/unavailable")
     public ResponseEntity<GetUnavailableCouponsOutputVo> getUnavailableCoupons(
-            GetUnavailableCouponsInputVo getUnavailableCouponsInputVo) {
+            GetUnavailableCouponsInputVo getUnavailableCouponsInputVo, Principal principal) {
         GetUnavailableCouponsInputDto getUnavailableCouponsInputDto = modelMapper.map(
                 getUnavailableCouponsInputVo, GetUnavailableCouponsInputDto.class);
         GetUnavailableCouponsOutputDto getUnavailableCouponsOutputDto =
-                couponService.getUnavailableCoupons(getUnavailableCouponsInputDto);
+                couponService.getUnavailableCoupons(getUnavailableCouponsInputDto, principal.getName());
         GetUnavailableCouponsOutputVo getUnavailableCouponsOutputVo = modelMapper.map(
                 getUnavailableCouponsOutputDto, GetUnavailableCouponsOutputVo.class);
         return new ResponseEntity<>(getUnavailableCouponsOutputVo, HttpStatus.OK);
