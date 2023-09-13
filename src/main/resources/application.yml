@@ -1,0 +1,73 @@
+server:
+  port: 8002
+
+spring:
+  application:
+    name: SSGPOINT_APP
+  profiles:
+    default: local
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: DESC
+    operationsSorter: method
+    disable-swagger-default-url: true
+    display-request-duration: true
+  api-docs:
+    path: /api-docs
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  paths-to-match:
+    - /api/v1/**
+#server:
+#  port: 8002
+#spring:
+#  application:
+#    name: SSGPOINT_APP
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#      format_sql: true
+#    show-sql: true
+#  #  datasource:
+#  #    url: jdbc:mysql://localhost:3306/ssgpoint
+#  #    username: root
+#  #    password: 1234
+#  #    driver-class-name: com.mysql.cj.jdbc.Driver
+#  # Replication 설정!
+#  datasource:
+#    master:
+#      hikari:
+#        jdbc-url: jdbc:mysql://15.164.17.12:3310/ssgcoupon # 나중에 localhost를 docker ip주소로 바꾸면 됨 ->172.18.03:3310
+#        read-only: false
+#        username: root
+#        password: 1234
+#        driver-class-name: com.mysql.cj.jdbc.Driver
+#    slave:
+#      hikari:
+#        jdbc-url: jdbc:mysql://15.164.17.12:3311/ssgcoupon # 나중에 localhost를 docker ip주소로 바꾸면 됨 ->172.18.02:3311
+#        read-only: true
+#        username: root
+#        password: 1234
+#        driver-class-name: com.mysql.cj.jdbc.Driver
+#JWT:
+#  SECRET_KEY: 95a43ad8448bdf0b843307aba994365a275c6cdde0210076c397331461a8af36a12bde89cdd4fc200519c94b6a57532f7e826a892ba86869c9bb73ff11b7b3905ea59714e88e56a2a9bf8386f5db0c7ec76112c5072431af7f474491939033816142f01db245e9c056856447a017b1c4aac2fc801efacd318b371516831eb2dc
+#  EXPIRATION_TIME: 14400000000000 # ms단위로 적어야함, 14400000 -> 4h
+#  header: Authorization
+#  prefix: Bearer
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui.html
+#    groups-order: DESC
+#    operationsSorter: method
+#    disable-swagger-default-url: true
+#    display-request-duration: true
+#  api-docs:
+#    path: /api-docs
+#  show-actuator: true
+#  default-consumes-media-type: application/json
+#  default-produces-media-type: application/json
+#  paths-to-match:
+#    - /api/v1/**
